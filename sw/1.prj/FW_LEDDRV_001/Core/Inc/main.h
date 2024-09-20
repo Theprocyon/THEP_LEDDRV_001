@@ -31,7 +31,8 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdbool.h"
+#include "stdint.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -41,7 +42,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern bool g_CurrSwStatus = 0;
+extern SW_t sw;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -53,10 +55,32 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void LEDDRV_ChAllOn();
+void LEDDRV_ChAllOff();
+void SW_OnSwButtonPushedCbk(SW_t *);
+bool SW_ReadPinSW();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SW_Pin GPIO_PIN_8
+#define SW_GPIO_Port GPIOB
+#define SW_EXTI_IRQn EXTI4_15_IRQn
+#define GATE1_Pin GPIO_PIN_3
+#define GATE1_GPIO_Port GPIOA
+#define GATE6_Pin GPIO_PIN_4
+#define GATE6_GPIO_Port GPIOA
+#define GATE5_Pin GPIO_PIN_5
+#define GATE5_GPIO_Port GPIOA
+#define GATE4_Pin GPIO_PIN_6
+#define GATE4_GPIO_Port GPIOA
+#define GATE3_Pin GPIO_PIN_7
+#define GATE3_GPIO_Port GPIOA
+#define GATE2_Pin GPIO_PIN_0
+#define GATE2_GPIO_Port GPIOB
+#define LED1_Pin GPIO_PIN_11
+#define LED1_GPIO_Port GPIOA
+#define LED2_Pin GPIO_PIN_12
+#define LED2_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

@@ -42,12 +42,17 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+bool g_CurrSwStatus = 0;
+SW_t sw;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
+
+
 
 /* USER CODE END PFP */
 
@@ -84,8 +89,10 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
+  SW_init(&sw, true, SW_OnSwButtonPushedCbk, SW_ReadPinSW);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -130,7 +137,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
@@ -139,8 +146,83 @@ void SystemClock_Config(void)
   }
 }
 
-/* USER CODE BEGIN 4 */
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GATE1_Pin|GATE6_Pin|GATE5_Pin|GATE4_Pin
+                          |GATE3_Pin|LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GATE2_GPIO_Port, GATE2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : SW_Pin */
+  GPIO_InitStruct.Pin = SW_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(SW_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : GATE1_Pin GATE6_Pin GATE5_Pin GATE4_Pin
+                           GATE3_Pin LED1_Pin LED2_Pin */
+  GPIO_InitStruct.Pin = GATE1_Pin|GATE6_Pin|GATE5_Pin|GATE4_Pin
+                          |GATE3_Pin|LED1_Pin|LED2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : GATE2_Pin */
+  GPIO_InitStruct.Pin = GATE2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GATE2_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
+}
+
+/* USER CODE BEGIN 4 */
+void LEDDRV_ChAllOn(){
+	HAL_GPIO_WritePin(GPIOA, GATE1_Pin | GATE3_Pin | GATE4_Pin | GATE5_Pin | GATE6_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB, GATE2_Pin, GPIO_PIN_SET);
+
+}
+
+void LEDDRV_ChAllOff(){
+	HAL_GPIO_WritePin(GPIOA, GATE1_Pin | GATE3_Pin | GATE4_Pin | GATE5_Pin | GATE6_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, GATE2_Pin, GPIO_PIN_RESET);
+}
+
+void SW_OnSwButtonPushedCbk(SW_t *instance){
+	if(g_CurrSwStatus){
+		LEDDRV_ChAllOff();
+		g_CurrSwStatus = 0;
+	}else{
+		LEDDRV_ChAllOn();
+		g_CurrSwStatus = 1;
+	}
+}
+
+bool SW_ReadPinSW(){
+	return HAL_GPIO_ReadPin(SW_GPIO_Port, SW_GPIO_Pin);
+}
 /* USER CODE END 4 */
 
 /**
